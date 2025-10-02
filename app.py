@@ -9,14 +9,15 @@ st.set_page_config(
     layout="centered"
 )
 
-st.title("📄 Processador de Contract IDs para SQL")
+st.title("Limpeza de Contract IDs para SQL")
 st.markdown("---")
 
 st.markdown("""
 **Instrução:** Cole a lista de Contract IDs na caixa de texto. O aplicativo irá:
 1. Remover qualquer caractere que não seja um dígito (mantendo apenas números).
 2. Remover duplicatas.
-3. Formatar o resultado em uma única linha separada por vírgulas e aspas simples (`'ID1', 'ID2', ...`), pronta para ser usada em consultas SQL.
+3. Formatar o resultado em uma única linha separada por vírgulas e aspas simples
+ex: (`'ID1', 'ID2', ...`), pronta para ser usada em consultas SQL.
 """)
 
 # Função de processamento (usando st.cache_data para performance)
@@ -110,3 +111,4 @@ if st.button('Processar e Formatar IDs') and raw_text_input:
         st.warning("O processamento foi concluído, mas nenhum 'Contract ID' válido foi encontrado na entrada fornecida.")
     else:
         st.error("Ocorreu um erro desconhecido durante o processamento.")
+
