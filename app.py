@@ -31,7 +31,7 @@ def process_contract_ids(raw_input_text):
         # 1. Pré-processamento e Substituição de Delimitadores
         # Remove quebras de linha existentes (para tratar linhas únicas)
         # Substitui vírgulas e espaços por um delimitador consistente (vírgula)
-        text_processed = raw_input_text.replace('\r\n', '\n').replace('\n', ',')
+        text_processed = raw_input_text.replace('"', '').replace('\r\n', '\n').replace('\n', ',')
         text_processed = re.sub(r'[\s,;]+', ',', text_processed)
         
         # Divide o texto pelo delimitador único
@@ -111,3 +111,4 @@ if st.button('Processar IDs') and raw_text_input:
         st.warning("O processamento foi concluído, mas nenhum 'Contract ID' válido foi encontrado na entrada fornecida.")
     else:
         st.error("Ocorreu um erro desconhecido durante o processamento.")
+
