@@ -112,3 +112,4 @@ if uploaded_file is not None:
         )
     elif processed_df is not None and processed_df.empty:
         st.warning("O processamento foi concluído, mas nenhum 'Contract ID' válido foi encontrado.")
+
