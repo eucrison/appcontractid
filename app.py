@@ -24,7 +24,7 @@ def process_contract_ids(uploaded_file):
     """
     try:
         # 1. Leitura do arquivo Excel
-        df = pd.read_excel(uploaded_file)
+        df = pd.read_csv(uploaded_file)
     except Exception as e:
         st.error(f"Erro ao ler o arquivo: Certifique-se de que é um arquivo Excel válido (.xlsx). Detalhes: {e}")
         return None
@@ -112,4 +112,5 @@ if uploaded_file is not None:
         )
     elif processed_df is not None and processed_df.empty:
         st.warning("O processamento foi concluído, mas nenhum 'Contract ID' válido foi encontrado.")
+
 
