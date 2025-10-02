@@ -26,7 +26,7 @@ def process_contract_ids(uploaded_file):
         # 1. Leitura do arquivo Excel
         df = pd.read_csv(uploaded_file)
     except Exception as e:
-        st.error(f"Erro ao ler o arquivo: Certifique-se de que é um arquivo Excel válido (.xlsx). Detalhes: {e}")
+        st.error(f"Erro ao ler o arquivo: Certifique-se de que é um arquivo Excel válido (.csv). Detalhes: {e}")
         return None
 
     if 'Contract ID' not in df.columns:
@@ -78,8 +78,8 @@ def process_contract_ids(uploaded_file):
 # --- Interface do Aplicativo ---
 
 uploaded_file = st.file_uploader(
-    "1. Faça o upload do arquivo Excel (.xlsx)",
-    type=['xlsx'],
+    "1. Faça o upload do arquivo Excel (.csv)",
+    type=['csv'],
     help="O arquivo deve ter uma coluna chamada 'Contract ID'."
 )
 
@@ -112,5 +112,6 @@ if uploaded_file is not None:
         )
     elif processed_df is not None and processed_df.empty:
         st.warning("O processamento foi concluído, mas nenhum 'Contract ID' válido foi encontrado.")
+
 
 
