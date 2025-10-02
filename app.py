@@ -55,7 +55,7 @@ st.markdown(
     
     /* Estilização do Botão Nativo Streamlit (Processar) */
     .stButton > button {
-        background-color: #F5F5F5 !important;
+        background-color: #FFFFFF !important;
         border: 2px solid #d80073 !important;
         color: #d80073 !important;
         font-weight: bold;
@@ -226,3 +226,4 @@ with col_output:
         st.code("Aguardando colagem e processamento dos dados...", language="sql", height=300)
         # Placeholder para o botão copiado
         st.markdown('<div class="copy-button" style="text-align: center; cursor: default;">📋 Copiar Lista Formatada</div>', unsafe_allow_html=True)
+
