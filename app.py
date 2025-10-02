@@ -100,7 +100,7 @@ if st.button('Processar e Formatar IDs') and raw_text_input:
 
         # Botão para copiar (Download Button é o padrão do Streamlit para exportar dados)
         st.download_button(
-            label="📋 Copiar Lista Formatada",
+            label="Baixar Lista Formatada",
             data=saida,
             file_name="contratos_sql_list.txt",
             mime="text/plain",
@@ -111,4 +111,5 @@ if st.button('Processar e Formatar IDs') and raw_text_input:
         st.warning("O processamento foi concluído, mas nenhum 'Contract ID' válido foi encontrado na entrada fornecida.")
     else:
         st.error("Ocorreu um erro desconhecido durante o processamento.")
+
 
