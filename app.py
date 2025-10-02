@@ -5,16 +5,18 @@ import re
 
 # Configuração da página
 st.set_page_config(
-    page_title="Limpeza e Extração de Contract IDs",
+    page_title="Limpeza e Formatação de Contract IDs para SQL",
     layout="centered"
 )
 
-st.title("📄 Processador de Contract IDs por Colagem")
+st.title("📄 Processador de Contract IDs para SQL")
 st.markdown("---")
 
 st.markdown("""
-Cole os IDs de contrato na caixa de texto abaixo. O aplicativo irá **remover qualquer caractere que não seja número**, 
-extraindo apenas as sequências numéricas e removendo duplicatas.
+**Instrução:** Cole a lista de Contract IDs na caixa de texto. O aplicativo irá:
+1. Remover qualquer caractere que não seja um dígito (mantendo apenas números).
+2. Remover duplicatas.
+3. Formatar o resultado em uma única linha separada por vírgulas e aspas simples (`'ID1', 'ID2', ...`), pronta para ser usada em consultas SQL.
 """)
 
 # Função de processamento (usando st.cache_data para performance)
@@ -30,12 +32,10 @@ def process_contract_ids(raw_input_text):
         
         # 1. Pré-processamento para extrair apenas números
         
-        # NOVO AJUSTE: Substitui qualquer caractere que não seja dígito (\D) por uma vírgula (,)
-        # Isso lida com espaços, letras, quebras de linha e outros separadores de forma robusta.
+        # Substitui qualquer caractere que não seja dígito (\D) por uma vírgula (,)
         text_processed = re.sub(r'\D+', ',', raw_input_text)
         
-        # Divide o texto pela vírgula. O [item.strip() for item in ... if item.strip()]
-        # garante que valores vazios ou apenas espaços sejam removidos, resultando apenas em números.
+        # Divide o texto pela vírgula, removendo entradas vazias
         list_of_ids = [item.strip() for item in text_processed.split(',') if item.strip()]
 
         if not list_of_ids:
@@ -46,25 +46,21 @@ def process_contract_ids(raw_input_text):
 
         # 3. Limpeza Final e Coerção
         
-        # Remove strings vazias e 'nan' (caso algum resíduo tenha ficado)
+        # Remove strings vazias e 'nan'
         df_split = df_split[df_split != '']
         df_split = df_split[df_split.str.lower() != 'nan']
 
         # Converte para string e remove o '.0' que pode aparecer em números inteiros
         df_split = df_split.astype(str).str.replace(r'\.0$', '', regex=True)
         
-        # 4. Conversão para Numérico (Int64) e remoção de valores nulos
+        # Tenta converter para numérico e depois para Int64, para garantir que são apenas números válidos
         try:
-            # Tenta converter para numérico e depois para Int64 (inteiro com suporte a nulos)
-            # errors='coerce' transforma não-números (que não devem existir após o re.sub) em NaN
             df_numeric = pd.to_numeric(df_split, errors='coerce')
             df_split = df_numeric.astype('Int64')
         except:
-            # Caso a conversão falhe (improvável com o novo regex), mantém como string
-            st.warning("Aviso: Falha na conversão para número inteiro. Mantendo IDs como texto.")
-            pass 
+            pass # Mantém como string se a conversão falhar
 
-        # Remove linhas que resultaram em <NA> (nulo, gerado pelo 'coerce')
+        # Remove linhas que resultaram em <NA> (nulo)
         df_split = df_split.dropna()
         
         # Cria o DataFrame final, remove duplicatas e reseta o índice
@@ -81,33 +77,35 @@ raw_text_input = st.text_area(
     placeholder="Exemplo:\nID: 12345678 (Este texto será removido)\n90123456, 78901234 56789012"
 )
 
-if st.button('Processar IDs') and raw_text_input:
+if st.button('Processar e Formatar IDs') and raw_text_input:
     # Processa o texto inserido
     processed_df = process_contract_ids(raw_text_input)
     
     if processed_df is not None and not processed_df.empty:
-        st.markdown("---")
-        st.subheader("2. Resultado Final (IDs Limpos e Separados)")
-        st.info(f"Total de **{len(processed_df)}** IDs únicos encontrados após a limpeza.")
         
-        # Exibe as primeiras linhas do resultado
-        st.dataframe(processed_df.head(10), use_container_width=True)
+        # 2. Formatação SQL
+        # Converta a coluna de IDs limpos para uma lista de strings para formatação
+        numeros = processed_df['Contract ID Limpo'].astype(str).tolist()
         
-        # Prepara o arquivo para download
-        csv_buffer = io.StringIO()
-        # Converte para string antes de salvar para garantir que 'Int64' seja salvo corretamente
-        processed_df['Contract ID Limpo'] = processed_df['Contract ID Limpo'].astype(str)
-        processed_df.to_csv(csv_buffer, index=False)
-        csv_data = csv_buffer.getvalue().encode('utf-8')
+        # Formata cada número com aspas simples, juntando-os com vírgula
+        saida = ",".join([f"'{n}'" for n in numeros])
 
-        # Botão de download
+        st.markdown("---")
+        st.subheader("2. Saída Formatada para SQL (`IN` Clause)")
+        st.info(f"Total de **{len(numeros)}** IDs únicos encontrados e formatados.")
+
+        # Exibe o resultado formatado em um bloco de código SQL
+        st.code(saida, language="sql")
+
+        # Botão para copiar (Download Button é o padrão do Streamlit para exportar dados)
         st.download_button(
-            label="3. Baixar 'contract_ids_limpos.csv'",
-            data=csv_data,
-            file_name='contract_ids_limpos.csv',
-            mime='text/csv',
-            help="Clique para baixar o arquivo CSV com a lista limpa de IDs."
+            label="📋 Copiar Lista Formatada",
+            data=saida,
+            file_name="contratos_sql_list.txt",
+            mime="text/plain",
+            help="Baixa um arquivo de texto contendo a lista formatada, facilitando a cópia para sua consulta SQL."
         )
+        
     elif processed_df is not None and processed_df.empty:
         st.warning("O processamento foi concluído, mas nenhum 'Contract ID' válido foi encontrado na entrada fornecida.")
     else:
