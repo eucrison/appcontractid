@@ -60,7 +60,7 @@ st.markdown(
         color: #d80073 !important;
         font-weight: bold;
         transition: all 0.2s ease-in-out;
-        border-radius: 0.5rem;
+        border-radius: 0.2rem;
     }
     
     /* Estilo Hover para Botão Nativo */
@@ -226,4 +226,5 @@ with col_output:
         st.code("Aguardando colagem e processamento dos dados...", language="sql", height=300)
         # Placeholder para o botão copiado
         st.markdown('<div class="copy-button" style="text-align: center; cursor: default;">📋 Copiar Lista Formatada</div>', unsafe_allow_html=True)
+
 
