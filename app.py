@@ -13,28 +13,29 @@ st.title("📄 Processador de Contract IDs por Colagem")
 st.markdown("---")
 
 st.markdown("""
-Cole os IDs de contrato na caixa de texto abaixo. O aplicativo irá limpar e extrair IDs de contrato, 
-separando múltiplos valores contidos em uma única linha (separados por vírgula, espaço ou quebra de linha).
+Cole os IDs de contrato na caixa de texto abaixo. O aplicativo irá **remover qualquer caractere que não seja número**, 
+extraindo apenas as sequências numéricas e removendo duplicatas.
 """)
 
 # Função de processamento (usando st.cache_data para performance)
 @st.cache_data
 def process_contract_ids(raw_input_text):
     """
-    Recebe uma string de texto, limpa e extrai os IDs de contrato.
+    Recebe uma string de texto, limpa e extrai os IDs de contrato, mantendo apenas dígitos.
     """
     if not raw_input_text:
         return pd.DataFrame()
 
     with st.spinner('Processando e limpando os Contract IDs...'):
         
-        # 1. Pré-processamento e Substituição de Delimitadores
-        # Remove quebras de linha existentes (para tratar linhas únicas)
-        # Substitui vírgulas e espaços por um delimitador consistente (vírgula)
-        text_processed = raw_input_text.replace('"', '').replace('\r\n', '\n').replace('\n', ',')
-        text_processed = re.sub(r'[\s,;]+', ',', text_processed)
+        # 1. Pré-processamento para extrair apenas números
         
-        # Divide o texto pelo delimitador único
+        # NOVO AJUSTE: Substitui qualquer caractere que não seja dígito (\D) por uma vírgula (,)
+        # Isso lida com espaços, letras, quebras de linha e outros separadores de forma robusta.
+        text_processed = re.sub(r'\D+', ',', raw_input_text)
+        
+        # Divide o texto pela vírgula. O [item.strip() for item in ... if item.strip()]
+        # garante que valores vazios ou apenas espaços sejam removidos, resultando apenas em números.
         list_of_ids = [item.strip() for item in text_processed.split(',') if item.strip()]
 
         if not list_of_ids:
@@ -55,13 +56,13 @@ def process_contract_ids(raw_input_text):
         # 4. Conversão para Numérico (Int64) e remoção de valores nulos
         try:
             # Tenta converter para numérico e depois para Int64 (inteiro com suporte a nulos)
-            # errors='coerce' transforma não-números em NaN
+            # errors='coerce' transforma não-números (que não devem existir após o re.sub) em NaN
             df_numeric = pd.to_numeric(df_split, errors='coerce')
             df_split = df_numeric.astype('Int64')
         except:
-            # Caso a conversão falhe por IDs não padrão, usa o valor string original
+            # Caso a conversão falhe (improvável com o novo regex), mantém como string
             st.warning("Aviso: Falha na conversão para número inteiro. Mantendo IDs como texto.")
-            pass # Mantém como string se a conversão falhar
+            pass 
 
         # Remove linhas que resultaram em <NA> (nulo, gerado pelo 'coerce')
         df_split = df_split.dropna()
@@ -77,7 +78,7 @@ def process_contract_ids(raw_input_text):
 raw_text_input = st.text_area(
     "1. Cole a lista de Contract IDs aqui:",
     height=200,
-    placeholder="Exemplo:\n12345678\n90123456, 78901234 56789012"
+    placeholder="Exemplo:\nID: 12345678 (Este texto será removido)\n90123456, 78901234 56789012"
 )
 
 if st.button('Processar IDs') and raw_text_input:
@@ -111,4 +112,3 @@ if st.button('Processar IDs') and raw_text_input:
         st.warning("O processamento foi concluído, mas nenhum 'Contract ID' válido foi encontrado na entrada fornecida.")
     else:
         st.error("Ocorreu um erro desconhecido durante o processamento.")
-
